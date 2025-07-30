@@ -3,6 +3,7 @@
 *.obj
 *.exe
 .deps
+.dirstamp
 aclocal.m4
 autom4te.cache
 Makefile
@@ -10,6 +11,7 @@ Makefile.in
 /dgen
 /dgen_tobin
 /configure
+/configure~
 /config.log
 /config.status
 /config.guess
