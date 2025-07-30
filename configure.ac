@@ -1,25 +1,18 @@
 dnl DGen/SDL v1.33
 dnl At long last, the configure script!
 
-AC_INIT(
-	[DGen/SDL],
-	[1.33],
-	[zamaz@users.sourceforge.net],
-	[dgen-sdl],
-	[http://sourceforge.net/projects/dgen],
-)
+AC_INIT([DGen/SDL],[1.33],[zamaz@users.sourceforge.net],[dgen-sdl],[http://sourceforge.net/projects/dgen],[])
 
 dnl We'll need machine type later.
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_HOST
 
 dnl Initialize Automake.
-AM_INIT_AUTOMAKE([silent-rules])
+AM_INIT_AUTOMAKE([1.18.1 subdir-objects])
 AM_SILENT_RULES([yes])
 AM_PROG_AS
 
 dnl Check for standard programs.
 AC_PROG_CC
-AC_PROG_CC_C99
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_CXXCPP
@@ -34,7 +27,7 @@ dnl We're using C.
 AC_LANG([C])
 
 dnl Check endianness.
-AC_C_BIGENDIAN
+dnl AC_C_BIGENDIAN
 
 dnl Cross compilation stuff.
 AS_IF(
@@ -306,7 +299,7 @@ AS_IF(
 dnl Check for NASM output format.
 AC_ARG_WITH(
 	[nasm-format],
-	[AC_HELP_STRING(
+	[AS_HELP_STRING(
 		[--with-nasm-format[[=format]]],
 		[use this output format for NASM (see "nasm -hf" output for]
 		[available formats) [default=auto]]
@@ -366,7 +359,7 @@ AS_IF(
 dnl Crap TV filters support.
 AC_ARG_ENABLE(
 	[ctv],
-	[AC_HELP_STRING([--disable-ctv], [disable Crap TV filters])],
+	[AS_HELP_STRING([--disable-ctv], [disable Crap TV filters])],
 	[USE_CTV=$enableval],
 	[USE_CTV=yes]
 )
@@ -390,7 +383,7 @@ AC_ARG_ENABLE(
 dnl x86-specific ASM options.
 AC_ARG_ENABLE(
 	[x86-mmx],
-	[AC_HELP_STRING([--enable-x86-mmx], [enable MMX memcpy])],
+	[AS_HELP_STRING([--enable-x86-mmx], [enable MMX memcpy])],
 	dnl If --disable-asm isn't specified, MMX must be auto-detected,
 	dnl unless forced via --enable-x86-mmx.
 	[USE_X86_MMX=$enableval],
@@ -402,7 +395,7 @@ AC_ARG_ENABLE(
 )
 AC_ARG_ENABLE(
 	[x86-ctv],
-	[AC_HELP_STRING([--enable-x86-ctv], [enable ASM Crap TV filters])],
+	[AS_HELP_STRING([--enable-x86-ctv], [enable ASM Crap TV filters])],
 	dnl Disable this if --disable-ctv is given.
 	[AS_IF(
 		[test "x$USE_CTV" != xno],
@@ -417,13 +410,13 @@ AC_ARG_ENABLE(
 )
 AC_ARG_ENABLE(
 	[x86-tiles],
-	[AC_HELP_STRING([--enable-x86-tiles], [enable ASM tiles])],
+	[AS_HELP_STRING([--enable-x86-tiles], [enable ASM tiles])],
 	[USE_X86_TILES=$enableval],
 	[USE_X86_TILES=$USE_X86_ASM]
 )
 AC_ARG_ENABLE(
 	[x86-mz80],
-	[AC_HELP_STRING([--enable-x86-mz80], [use ASM version of MZ80])],
+	[AS_HELP_STRING([--enable-x86-mz80], [use ASM version of MZ80])],
 	[USE_X86_MZ80=$enableval],
 	[USE_X86_MZ80=$USE_X86_ASM]
 )
@@ -729,15 +722,15 @@ AC_SUBST(CXXFLAGS_B)
 AC_SUBST(LDFLAGS_B)
 
 dnl Done!
-AC_OUTPUT(
-	[Makefile]
-	[star/Makefile]
-	[musa/Makefile]
-	[cyclone/Makefile]
-	[mz80/Makefile]
-	[sdl/Makefile]
-	[doc/Makefile]
-)
+AC_CONFIG_FILES([Makefile
+	star/Makefile
+	musa/Makefile
+	cyclone/Makefile
+	mz80/Makefile
+	sdl/Makefile
+	doc/Makefile
+])
+AC_OUTPUT
 
 AC_MSG_NOTICE([
 
