@@ -12,24 +12,14 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 /*
- * This file contains a C and MMX implementation of the Scale2x effect.
+ * This file contains a C and SSE2 implementation of the Scale2x effect.
  *
  * You can find an high level description of the effect at :
  *
- * http://scale2x.sourceforge.net/
- *
- * Alternatively at the previous license terms, you are allowed to use this
- * code in your program with these conditions:
- * - the program is not used in commercial activities.
- * - the whole source code of the program is released with the binary.
- * - derivative works of the program are allowed.
+ * http://www.scale2x.it/
  */
 
 #if HAVE_CONFIG_H
@@ -53,7 +43,6 @@
 /* #define USE_SCALE_RANDOMWRITE */
 
 #ifdef USE_SCALE_RANDOMWRITE
-
 static inline void scale3x_8_def_whole(scale3x_uint8* restrict dst0, scale3x_uint8* restrict dst1, scale3x_uint8* restrict dst2, const scale3x_uint8* restrict src0, const scale3x_uint8* restrict src1, const scale3x_uint8* restrict src2, unsigned count)
 {
 	assert(count >= 2);
@@ -144,9 +133,9 @@ static inline void scale3x_8_def_whole(scale3x_uint8* restrict dst0, scale3x_uin
 		dst2[2] = src1[0];
 	}
 }
+#endif
 
-#else /* USE_SCALE_RANDOMWRITE */
-
+#ifndef USE_SCALE_RANDOMWRITE
 static inline void scale3x_8_def_border(scale3x_uint8* restrict dst, const scale3x_uint8* restrict src0, const scale3x_uint8* restrict src1, const scale3x_uint8* restrict src2, unsigned count)
 {
 	assert(count >= 2);
@@ -197,7 +186,9 @@ static inline void scale3x_8_def_border(scale3x_uint8* restrict dst, const scale
 		dst[2] = src1[0];
 	}
 }
+#endif
 
+#ifndef USE_SCALE_RANDOMWRITE
 static inline void scale3x_8_def_center(scale3x_uint8* restrict dst, const scale3x_uint8* restrict src0, const scale3x_uint8* restrict src1, const scale3x_uint8* restrict src2, unsigned count)
 {
 	assert(count >= 2);
@@ -248,11 +239,9 @@ static inline void scale3x_8_def_center(scale3x_uint8* restrict dst, const scale
 		dst[2] = src1[0];
 	}
 }
-
-#endif /* USE_SCALE_RANDOMWRITE */
+#endif
 
 #ifdef USE_SCALE_RANDOMWRITE
-
 static inline void scale3x_16_def_whole(scale3x_uint16* restrict dst0, scale3x_uint16* restrict dst1, scale3x_uint16* restrict dst2, const scale3x_uint16* restrict src0, const scale3x_uint16* restrict src1, const scale3x_uint16* restrict src2, unsigned count)
 {
 	assert(count >= 2);
@@ -343,9 +332,9 @@ static inline void scale3x_16_def_whole(scale3x_uint16* restrict dst0, scale3x_u
 		dst2[2] = src1[0];
 	}
 }
+#endif
 
-#else /* USE_SCALE_RANDOMWRITE */
-
+#ifndef USE_SCALE_RANDOMWRITE
 static inline void scale3x_16_def_border(scale3x_uint16* restrict dst, const scale3x_uint16* restrict src0, const scale3x_uint16* restrict src1, const scale3x_uint16* restrict src2, unsigned count)
 {
 	assert(count >= 2);
@@ -396,7 +385,9 @@ static inline void scale3x_16_def_border(scale3x_uint16* restrict dst, const sca
 		dst[2] = src1[0];
 	}
 }
+#endif
 
+#ifndef USE_SCALE_RANDOMWRITE
 static inline void scale3x_16_def_center(scale3x_uint16* restrict dst, const scale3x_uint16* restrict src0, const scale3x_uint16* restrict src1, const scale3x_uint16* restrict src2, unsigned count)
 {
 	assert(count >= 2);
@@ -447,11 +438,9 @@ static inline void scale3x_16_def_center(scale3x_uint16* restrict dst, const sca
 		dst[2] = src1[0];
 	}
 }
-
-#endif /* USE_SCALE_RANDOMWRITE */
+#endif
 
 #ifdef USE_SCALE_RANDOMWRITE
-
 static inline void scale3x_32_def_whole(scale3x_uint32* restrict dst0, scale3x_uint32* restrict dst1, scale3x_uint32* restrict dst2, const scale3x_uint32* restrict src0, const scale3x_uint32* restrict src1, const scale3x_uint32* restrict src2, unsigned count)
 {
 	assert(count >= 2);
@@ -542,9 +531,9 @@ static inline void scale3x_32_def_whole(scale3x_uint32* restrict dst0, scale3x_u
 		dst2[2] = src1[0];
 	}
 }
+#endif
 
-#else /* USE_SCALE_RANDOMWRITE */
-
+#ifndef USE_SCALE_RANDOMWRITE
 static inline void scale3x_32_def_border(scale3x_uint32* restrict dst, const scale3x_uint32* restrict src0, const scale3x_uint32* restrict src1, const scale3x_uint32* restrict src2, unsigned count)
 {
 	assert(count >= 2);
@@ -595,7 +584,9 @@ static inline void scale3x_32_def_border(scale3x_uint32* restrict dst, const sca
 		dst[2] = src1[0];
 	}
 }
+#endif
 
+#ifndef USE_SCALE_RANDOMWRITE
 static inline void scale3x_32_def_center(scale3x_uint32* restrict dst, const scale3x_uint32* restrict src0, const scale3x_uint32* restrict src1, const scale3x_uint32* restrict src2, unsigned count)
 {
 	assert(count >= 2);
@@ -646,8 +637,7 @@ static inline void scale3x_32_def_center(scale3x_uint32* restrict dst, const sca
 		dst[2] = src1[0];
 	}
 }
-
-#endif /* USE_SCALE_RANDOMWRITE */
+#endif
 
 /**
  * Scale by a factor of 3 a row of pixels of 8 bits.
