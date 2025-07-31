@@ -3,6 +3,10 @@
 WHAT'S NEW?
 --------------------------------------------------------------------------------
 
+v1.34 <- v1.33
+* Updated Scale2x to 4.0 2016/11
+* Fixed Build on Linux x64
+
 v1.33 <- v1.32
  * Joystick hat is now handled correctly.
  * Added bindings to switch between previous/next save slots.
