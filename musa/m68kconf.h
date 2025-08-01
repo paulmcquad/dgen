@@ -3,20 +3,28 @@
 /* ======================================================================== */
 /*
  *                                  MUSASHI
- *                                Version 3.3
+ *                                Version 4.10
  *
  * A portable Motorola M680x0 processor emulation engine.
- * Copyright 1998-2001 Karl Stenerud.  All rights reserved.
+ * Copyright Karl Stenerud.  All rights reserved.
  *
- * This code may be freely used for non-commercial purposes as long as this
- * copyright notice remains unaltered in the source code and any binary files
- * containing this code in compiled form.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * All other lisencing terms must be negotiated with the author
- * (Karl Stenerud).
- *
- * The latest version of this code can be obtained at:
- * http://kstenerud.cjb.net
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 
@@ -57,10 +65,10 @@
 /* ======================================================================== */
 
 /* Turn ON if you want to use the following M68K variants */
-#define M68K_EMULATE_008            OPT_OFF
 #define M68K_EMULATE_010            OPT_OFF
 #define M68K_EMULATE_EC020          OPT_OFF
 #define M68K_EMULATE_020            OPT_OFF
+#define M68K_EMULATE_030            OPT_OFF
 #define M68K_EMULATE_040            OPT_OFF
 
 
@@ -110,7 +118,6 @@
 #define M68K_EMULATE_RESET          OPT_OFF
 #define M68K_RESET_CALLBACK()       your_reset_handler_function()
 
-
 /* If ON, CPU will call the callback when it encounters a cmpi.l #v, dn
  * instruction.
  */
@@ -124,13 +131,22 @@
 #define M68K_RTE_HAS_CALLBACK       OPT_OFF
 #define M68K_RTE_CALLBACK()         your_rte_handler_function()
 
-
 /* If ON, CPU will call the callback when it encounters a tas
  * instruction.
  */
 #define M68K_TAS_HAS_CALLBACK       OPT_OFF
 #define M68K_TAS_CALLBACK()         your_tas_handler_function()
 
+/* If ON, CPU will call the callback when it encounters an illegal instruction
+ * passing the opcode as argument. If the callback returns 1, then it's considered
+ * as a normal instruction, and the illegal exception in canceled. If it returns 0,
+ * the exception occurs normally.
+ * The callback looks like int callback(int opcode)
+ * You should put OPT_SPECIFY_HANDLER here if you cant to use it, otherwise it will
+ * use a dummy default handler and you'll have to call m68k_set_illg_instr_callback explicitely
+ */
+#define M68K_ILLG_HAS_CALLBACK	    OPT_OFF
+#define M68K_ILLG_CALLBACK(opcode)  op_illg(opcode)
 
 /* If ON, CPU will call the set fc callback on every memory access to
  * differentiate between user/supervisor, program/data access like a real
@@ -140,7 +156,6 @@
  */
 #define M68K_EMULATE_FC             OPT_OFF
 #define M68K_SET_FC_CALLBACK(A)     your_set_fc_handler_function(A)
-
 
 /* If ON, CPU will call the pc changed callback when it changes the PC by a
  * large value.  This allows host programs to be nicer when it comes to
@@ -180,6 +195,9 @@
 #define M68K_LOG_1010_1111          OPT_OFF
 #define M68K_LOG_FILEHANDLE         some_file_handle
 
+/* Emulate PMMU : if you enable this, there will be a test to see if the current chip has some enabled pmmu added to every memory access,
+ * so enable this only if it's useful */
+#define M68K_EMULATE_PMMU   OPT_OFF
 
 /* ----------------------------- COMPATIBILITY ---------------------------- */
 
