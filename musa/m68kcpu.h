@@ -289,6 +289,7 @@ typedef uint32 uint64;
 #define CPU_TYPE         m68ki_cpu.cpu_type
 
 #define REG_DA           m68ki_cpu.dar /* easy access to data and address regs */
+#define REG_DA_SAVE      m68ki_cpu.dar_save
 #define REG_D            m68ki_cpu.dar
 #define REG_A            (m68ki_cpu.dar+8)
 #define REG_PPC 		 m68ki_cpu.ppc
@@ -342,6 +343,9 @@ typedef uint32 uint64;
 #define CYC_MOVEM_L      m68ki_cpu.cyc_movem_l
 #define CYC_SHIFT        m68ki_cpu.cyc_shift
 #define CYC_RESET        m68ki_cpu.cyc_reset
+#define HAS_PMMU		 m68ki_cpu.has_pmmu
+#define PMMU_ENABLED	 m68ki_cpu.pmmu_enabled
+#define RESET_CYCLES	 m68ki_cpu.reset_cycles
 
 
 #define CALLBACK_INT_ACK      m68ki_cpu.int_ack_callback
@@ -350,6 +354,7 @@ typedef uint32 uint64;
 #define CALLBACK_CMPILD_INSTR m68ki_cpu.cmpild_instr_callback
 #define CALLBACK_RTE_INSTR    m68ki_cpu.rte_instr_callback
 #define CALLBACK_TAS_INSTR    m68ki_cpu.tas_instr_callback
+#define CALLBACK_ILLG_INSTR   m68ki_cpu.illg_instr_callback
 #define CALLBACK_PC_CHANGED   m68ki_cpu.pc_changed_callback
 #define CALLBACK_SET_FC       m68ki_cpu.set_fc_callback
 #define CALLBACK_INSTR_HOOK   m68ki_cpu.instr_hook_callback
