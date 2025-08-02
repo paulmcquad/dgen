@@ -891,8 +891,10 @@ typedef union
 
 typedef struct
 {
-	uint cpu_type;     /* CPU Type: 68000, 68008, 68010, 68EC020, or 68020 */
+	uint cpu_type;     /* CPU Type: 68000, 68008, 68010, 68EC020, 68020, 68EC030, 68030, 68EC040, or 68040 */
 	uint dar[16];      /* Data and Address Registers */
+	uint dar_save[16];  /* Saved Data and Address Registers (pushed onto the
+						   stack when a bus error occurs)*/
 	uint ppc;		   /* Previous program counter */
 	uint pc;           /* Program Counter */
 	uint sp[7];        /* User, Interrupt, and Master Stack Pointers */
@@ -925,6 +927,10 @@ typedef struct
 	uint sr_mask;      /* Implemented status register bits */
 	uint instr_mode;   /* Stores whether we are in instruction mode or group 0/1 exception mode */
 	uint run_mode;     /* Stores whether we are processing a reset, bus error, address error, or something else */
+	int  has_pmmu;     /* Indicates if a PMMU available (yes on 030, 040, no on EC030) */
+	int  pmmu_enabled; /* Indicates if the PMMU is enabled */
+	int  fpu_just_reset; /* Indicates the FPU was just reset */
+	uint reset_cycles;
 
 	/* Clocks required for instructions / exceptions */
 	uint cyc_bcc_notake_b;
@@ -936,8 +942,19 @@ typedef struct
 	uint cyc_movem_l;
 	uint cyc_shift;
 	uint cyc_reset;
-	uint8* cyc_instruction;
-	uint8* cyc_exception;
+
+	const uint8* cyc_instruction;
+	const uint8* cyc_exception;
+	
+	/* Virtual IRQ lines state */
+	uint virq_state;
+	uint nmi_pending;
+
+	/* PMMU registers */
+	uint mmu_crp_aptr, mmu_crp_limit;
+	uint mmu_srp_aptr, mmu_srp_limit;
+	uint mmu_tc;
+	uint16 mmu_sr;
 
 	/* Memory regions if defined */
 	m68k_mem_t (*mem)[];
@@ -950,6 +967,7 @@ typedef struct
 	void (*cmpild_instr_callback)(unsigned int, int); /* Called when a CMPI.L #v, Dn instruction is encountered */
 	void (*rte_instr_callback)(void);                 /* Called when a RTE instruction is encountered */
 	int  (*tas_instr_callback)(void);                 /* Called when a TAS instruction is encountered, allows / disallows writeback */
+	int  (*illg_instr_callback)(int);                 /* Called when an illegal instruction is encountered, allows handling */
 	void (*pc_changed_callback)(unsigned int new_pc); /* Called when the PC changes by a large amount */
 	void (*set_fc_callback)(unsigned int new_fc);     /* Called when the CPU function code changes */
 	int (*instr_hook_callback)(void);                 /* Called every instruction cycle prior to execution */
@@ -972,13 +990,13 @@ extern uint           m68ki_aerr_write_mode;
 extern uint           m68ki_aerr_fc;
 
 /* Read data immediately after the program counter */
-INLINE uint m68ki_read_imm_16(void);
-INLINE uint m68ki_read_imm_32(void);
+static inline uint m68ki_read_imm_16(void);
+static inline uint m68ki_read_imm_32(void);
 
 /* Read data with specific function code */
-INLINE uint m68ki_read_8_fc  (uint address, uint fc);
-INLINE uint m68ki_read_16_fc (uint address, uint fc);
-INLINE uint m68ki_read_32_fc (uint address, uint fc);
+static inline uint m68ki_read_8_fc (uint address, uint fc);
+static inline uint m68ki_read_16_fc (uint address, uint fc);
+static inline uint m68ki_read_32_fc (uint address, uint fc);
 
 /* Write data with specific function code */
 INLINE void m68ki_write_8_fc (uint address, uint fc, uint value);
@@ -991,7 +1009,7 @@ INLINE void m68ki_write_32_pd_fc(uint address, uint fc, uint value);
 /* Indexed and PC-relative ea fetching */
 INLINE uint m68ki_get_ea_pcdi(void);
 INLINE uint m68ki_get_ea_pcix(void);
-INLINE uint m68ki_get_ea_ix(uint An);
+static inline uint m68ki_get_ea_ix(uint An);
 
 /* Operand fetching */
 INLINE uint OPER_AY_AI_8(void);
@@ -1087,7 +1105,7 @@ INLINE void m68ki_exception_illegal(void);
 INLINE void m68ki_exception_format_error(void);
 INLINE void m68ki_exception_address_error(void);
 INLINE void m68ki_exception_interrupt(uint int_level);
-INLINE void m68ki_check_interrupts(void);            /* ASG: check for interrupts */
+static inline void m68ki_check_interrupts(void);     /* ASG: check for interrupts */
 
 /* quick disassembly (used for logging) */
 char* m68ki_disassemble_quick(unsigned int pc, unsigned int cpu_type);
@@ -1103,7 +1121,7 @@ char* m68ki_disassemble_quick(unsigned int pc, unsigned int cpu_type);
 /* Handles all immediate reads, does address error check, function code setting,
  * and prefetching if they are enabled in m68kconf.h
  */
-INLINE uint m68ki_read_imm_16(void)
+static inline uint m68ki_read_imm_16(void)
 {
 	m68ki_set_fc(FLAG_S | FUNCTION_CODE_USER_PROGRAM); /* auto-disable (see m68kcpu.h) */
 	m68ki_check_address_error(REG_PC, MODE_READ, FLAG_S | FUNCTION_CODE_USER_PROGRAM); /* auto-disable (see m68kcpu.h) */
@@ -1120,7 +1138,8 @@ INLINE uint m68ki_read_imm_16(void)
 	return m68k_read_immediate_16(ADDRESS_68K(REG_PC-2));
 #endif /* M68K_EMULATE_PREFETCH */
 }
-INLINE uint m68ki_read_imm_32(void)
+
+static inline uint m68ki_read_imm_32(void)
 {
 #if M68K_EMULATE_PREFETCH
 	uint temp_val;
@@ -1277,20 +1296,20 @@ INLINE m68k_mem_t *m68ki_locate_memory(uint address)
  * These functions will also check for address error and set the function
  * code if they are enabled in m68kconf.h.
  */
-INLINE uint m68ki_read_8_fc(uint address, uint fc)
+static inline uint m68ki_read_8_fc (uint address, uint fc)
 {
 	m68ki_set_fc(fc); /* auto-disable (see m68kcpu.h) */
 	m68ki_read_memory_8_direct(ADDRESS_68K(address));
 	return m68k_read_memory_8(ADDRESS_68K(address));
 }
-INLINE uint m68ki_read_16_fc(uint address, uint fc)
+static inline uint m68ki_read_16_fc (uint address, uint fc)
 {
 	m68ki_set_fc(fc); /* auto-disable (see m68kcpu.h) */
 	m68ki_check_address_error_010_less(address, MODE_READ, fc); /* auto-disable (see m68kcpu.h) */
 	m68ki_read_memory_16_direct(ADDRESS_68K(address));
 	return m68k_read_memory_16(ADDRESS_68K(address));
 }
-INLINE uint m68ki_read_32_fc(uint address, uint fc)
+static inline uint m68ki_read_32_fc (uint address, uint fc)
 {
 	m68ki_set_fc(fc); /* auto-disable (see m68kcpu.h) */
 	m68ki_check_address_error_010_less(address, MODE_READ, fc); /* auto-disable (see m68kcpu.h) */
@@ -1390,7 +1409,8 @@ INLINE uint m68ki_get_ea_pcix(void)
  * 1  011  mem indir with long outer
  * 1  100-111  reserved
  */
-INLINE uint m68ki_get_ea_ix(uint An)
+
+static inline uint m68ki_get_ea_ix(uint An)
 {
 	/* An = base register */
 	uint extension = m68ki_read_imm_16();
@@ -2195,7 +2215,7 @@ void m68ki_exception_interrupt(uint int_level)
 
 
 /* ASG: Check for interrupts */
-INLINE void m68ki_check_interrupts(void)
+static inline void m68ki_check_interrupts(void)
 {
 	if(CPU_INT_LEVEL > FLAG_INT_MASK)
 		m68ki_exception_interrupt(CPU_INT_LEVEL>>8);
