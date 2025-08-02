@@ -57,6 +57,17 @@ extern "C" {
 #endif
 
 /* Data types used in this emulation core */
+#undef sint8
+#undef sint16
+#undef sint32
+#undef sint64
+#undef uint8
+#undef uint16
+#undef uint32
+#undef uint64
+#undef sint
+#undef uint
+
 typedef int8_t sint8;
 typedef int16_t sint16;
 typedef int32_t sint32;
@@ -75,6 +86,15 @@ typedef uint64_t uint64;
 typedef sint32 sint64;
 typedef uint32 uint64;
 #endif /* M68K_USE_64_BIT */
+
+/* U64 and S64 are used to wrap long integer constants. */
+#ifdef __GNUC__
+#define U64(val) val##ULL
+#define S64(val) val##LL
+#else
+#define U64(val) val
+#define S64(val) val
+#endif
 
 #define UINT16 uint16_t
 #define UINT64 uint64_t
