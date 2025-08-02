@@ -112,6 +112,7 @@ typedef uint32 uint64;
 /* ======================================================================== */
 
 /* Exception Vectors handled by emulation */
+#define EXCEPTION_RESET                    0
 #define EXCEPTION_BUS_ERROR                2 /* This one is not emulated! */
 #define EXCEPTION_ADDRESS_ERROR            3 /* This one is partially emulated (doesn't stack a proper frame yet) */
 #define EXCEPTION_ILLEGAL_INSTRUCTION      4
@@ -136,12 +137,17 @@ typedef uint32 uint64;
 #define FUNCTION_CODE_CPU_SPACE          7
 
 /* CPU types for deciding what to emulate */
-#define CPU_TYPE_000   1
-#define CPU_TYPE_008   2
-#define CPU_TYPE_010   4
-#define CPU_TYPE_EC020 8
-#define CPU_TYPE_020   16
-#define CPU_TYPE_040   32
+#define CPU_TYPE_000	(0x00000001)
+#define CPU_TYPE_008    (0x00000002)
+#define CPU_TYPE_010    (0x00000004)
+#define CPU_TYPE_EC020  (0x00000008)
+#define CPU_TYPE_020    (0x00000010)
+#define CPU_TYPE_EC030  (0x00000020)
+#define CPU_TYPE_030    (0x00000040)
+#define CPU_TYPE_EC040  (0x00000080)
+#define CPU_TYPE_LC040  (0x00000100)
+#define CPU_TYPE_040    (0x00000200)
+#define CPU_TYPE_SCC070 (0x00000400)
 
 /* Different ways to stop the CPU */
 #define STOP_LEVEL_STOP 1
@@ -153,8 +159,9 @@ typedef uint32 uint64;
 #define MODE_READ       0x10
 #define MODE_WRITE      0
 
-#define RUN_MODE_NORMAL          0
-#define RUN_MODE_BERR_AERR_RESET 1
+#define RUN_MODE_NORMAL              0
+#define RUN_MODE_BERR_AERR_RESET_WSF 1 /* writing stack frame */
+#define RUN_MODE_BERR_AERR_RESET     2 /* stack frame done */
 
 #ifndef NULL
 #define NULL ((void*)0)
