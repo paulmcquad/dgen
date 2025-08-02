@@ -367,15 +367,23 @@ typedef uint32 uint64;
 
 /* Disable certain comparisons if we're not using all CPU types */
 #if M68K_EMULATE_040
-	#define CPU_TYPE_IS_040_PLUS(A)    ((A) & CPU_TYPE_040)
+	#define CPU_TYPE_IS_040_PLUS(A)    ((A) & (CPU_TYPE_040 | CPU_TYPE_EC040))
 	#define CPU_TYPE_IS_040_LESS(A)    1
 #else
 	#define CPU_TYPE_IS_040_PLUS(A)    0
 	#define CPU_TYPE_IS_040_LESS(A)    1
 #endif
 
+#if M68K_EMULATE_030
+	#define CPU_TYPE_IS_030_PLUS(A)    ((A) & (CPU_TYPE_030 | CPU_TYPE_EC030 | CPU_TYPE_040 | CPU_TYPE_EC040))
+	#define CPU_TYPE_IS_030_LESS(A)    1
+#else
+	#define CPU_TYPE_IS_030_PLUS(A)    0
+#define CPU_TYPE_IS_030_LESS(A)        1
+#endif
+
 #if M68K_EMULATE_020
-	#define CPU_TYPE_IS_020_PLUS(A)    ((A) & (CPU_TYPE_020 | CPU_TYPE_040))
+	#define CPU_TYPE_IS_020_PLUS(A)    ((A) & (CPU_TYPE_020 | CPU_TYPE_030 | CPU_TYPE_EC030 | CPU_TYPE_040 | CPU_TYPE_EC040))
 	#define CPU_TYPE_IS_020_LESS(A)    1
 #else
 	#define CPU_TYPE_IS_020_PLUS(A)    0
@@ -383,16 +391,17 @@ typedef uint32 uint64;
 #endif
 
 #if M68K_EMULATE_EC020
-	#define CPU_TYPE_IS_EC020_PLUS(A)  ((A) & (CPU_TYPE_EC020 | CPU_TYPE_020 | CPU_TYPE_040))
-	#define CPU_TYPE_IS_EC020_LESS(A)  ((A) & (CPU_TYPE_000 | CPU_TYPE_008 | CPU_TYPE_010 | CPU_TYPE_EC020))
+	#define CPU_TYPE_IS_EC020_PLUS(A)  ((A) & (CPU_TYPE_EC020 | CPU_TYPE_020 | CPU_TYPE_030 | CPU_TYPE_EC030 | CPU_TYPE_040 | CPU_TYPE_EC040))
+	#define CPU_TYPE_IS_EC020_LESS(A)  ((A) & (CPU_TYPE_000 | CPU_TYPE_010 | CPU_TYPE_EC020))
 #else
 	#define CPU_TYPE_IS_EC020_PLUS(A)  CPU_TYPE_IS_020_PLUS(A)
 	#define CPU_TYPE_IS_EC020_LESS(A)  CPU_TYPE_IS_020_LESS(A)
 #endif
 
+
 #if M68K_EMULATE_010
 	#define CPU_TYPE_IS_010(A)         ((A) == CPU_TYPE_010)
-	#define CPU_TYPE_IS_010_PLUS(A)    ((A) & (CPU_TYPE_010 | CPU_TYPE_EC020 | CPU_TYPE_020 | CPU_TYPE_040))
+	#define CPU_TYPE_IS_010_PLUS(A)    ((A) & (CPU_TYPE_010 | CPU_TYPE_EC020 | CPU_TYPE_020 | CPU_TYPE_EC030 | CPU_TYPE_030 | CPU_TYPE_040 | CPU_TYPE_EC040))
 	#define CPU_TYPE_IS_010_LESS(A)    ((A) & (CPU_TYPE_000 | CPU_TYPE_008 | CPU_TYPE_010))
 #else
 	#define CPU_TYPE_IS_010(A)         0
@@ -485,6 +494,15 @@ typedef uint32 uint64;
 	#define m68ki_tas_callback() 0
 #endif /* M68K_TAS_HAS_CALLBACK */
 
+#if M68K_ILLG_HAS_CALLBACK
+	#if M68K_ILLG_HAS_CALLBACK == OPT_SPECIFY_HANDLER
+		#define m68ki_illg_callback(opcode) M68K_ILLG_CALLBACK(opcode)
+	#else
+		#define m68ki_illg_callback(opcode) CALLBACK_ILLG_INSTR(opcode)
+	#endif
+#else
+	#define m68ki_illg_callback(opcode) 0 // Default is 0 = not handled, exception will occur
+#endif /* M68K_ILLG_HAS_CALLBACK */
 
 #if M68K_INSTRUCTION_HOOK
 	#if M68K_INSTRUCTION_HOOK == OPT_SPECIFY_HANDLER
@@ -547,8 +565,32 @@ typedef uint32 uint64;
 /* Address error */
 #if M68K_EMULATE_ADDRESS_ERROR
 	#include <setjmp.h>
-	extern jmp_buf m68ki_aerr_trap;
 
+/* sigjmp() on Mac OS X and *BSD in general saves signal contexts and is super-slow, use sigsetjmp() to tell it not to */
+#ifdef _BSD_SETJMP_H
+extern sigjmp_buf m68ki_aerr_trap;
+#define m68ki_set_address_error_trap(m68k) \
+	if(sigsetjmp(m68ki_aerr_trap, 0) != 0) \
+	{ \
+		m68ki_exception_address_error(m68k); \
+		if(CPU_STOPPED) \
+		{ \
+			if (m68ki_remaining_cycles > 0) \
+				m68ki_remaining_cycles = 0; \
+			return m68ki_initial_cycles; \
+		} \
+	}
+
+#define m68ki_check_address_error(ADDR, WRITE_MODE, FC) \
+	if((ADDR)&1) \
+	{ \
+		m68ki_aerr_address = ADDR; \
+		m68ki_aerr_write_mode = WRITE_MODE; \
+		m68ki_aerr_fc = FC; \
+		siglongjmp(m68ki_aerr_trap, 1); \
+	}
+#else
+extern jmp_buf m68ki_aerr_trap;
 	#define m68ki_set_address_error_trap() \
 		if(setjmp(m68ki_aerr_trap) != 0) \
 		{ \
@@ -556,8 +598,14 @@ typedef uint32 uint64;
 			if(CPU_STOPPED) \
 			{ \
 				SET_CYCLES(0); \
-				CPU_INT_CYCLES = 0; \
 				return m68ki_initial_cycles; \
+			} \
+			/* ensure we don't re-enter execution loop after an
+			   address error if there's no more cycles remaining */ \
+			if(GET_CYCLES() <= 0) \
+			{ \
+				/* return how many clocks we used */ \
+				return m68ki_initial_cycles - GET_CYCLES(); \
 			} \
 		}
 
@@ -569,6 +617,7 @@ typedef uint32 uint64;
 			m68ki_aerr_fc = FC; \
 			longjmp(m68ki_aerr_trap, 1); \
 		}
+#endif
 
 	#define m68ki_check_address_error_010_less(ADDR, WRITE_MODE, FC) \
 		if (CPU_TYPE_IS_010_LESS(CPU_TYPE)) \
@@ -585,7 +634,7 @@ typedef uint32 uint64;
 #if M68K_LOG_ENABLE
 	#include <stdio.h>
 	extern FILE* M68K_LOG_FILEHANDLE
-	extern char* m68ki_cpu_names[];
+	extern const char *const m68ki_cpu_names[];
 
 	#define M68K_DO_LOG(A) if(M68K_LOG_FILEHANDLE) fprintf A
 	#if M68K_LOG_1010_1111
