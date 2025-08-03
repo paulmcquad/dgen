@@ -3,7 +3,7 @@
 /* ======================================================================== */
 /*
  *                                  MUSASHI
- *                                Version 4.10
+ *                                Version 4.10-DGen by TTide
  *
  * A portable Motorola M680x0 processor emulation engine.
  * Copyright Karl Stenerud.  All rights reserved.
@@ -1809,21 +1809,102 @@ static void d68040_fpu(void)
 
 		case 0x3:
 		{
-			sprintf(g_dasm_str, "fmove /todo");
+			switch ((w2>>10)&7)
+			{
+				case 3:		// packed decimal w/fixed k-factor
+					sprintf(g_dasm_str, "fmove%s   FP%d, %s {#%d}", float_data_format[(w2>>10)&7], dst_reg, get_ea_mode_str_32(g_cpu_ir), sext_7bit_int(w2&0x7f));
+					break;
+
+				case 7:		// packed decimal w/dynamic k-factor (register)
+					sprintf(g_dasm_str, "fmove%s   FP%d, %s {D%d}", float_data_format[(w2>>10)&7], dst_reg, get_ea_mode_str_32(g_cpu_ir), (w2>>4)&7);
+					break;
+
+				default:
+					sprintf(g_dasm_str, "fmove%s   FP%d, %s", float_data_format[(w2>>10)&7], dst_reg, get_ea_mode_str_32(g_cpu_ir));
+					break;
+			}
+		
+		}
+
+		case 0x4:	// ea to control
+		{
+			sprintf(g_dasm_str, "fmovem.l   %s, ", get_ea_mode_str_32(g_cpu_ir));
+			if (w2 & 0x1000) strcat(g_dasm_str, "fpcr");
+			if (w2 & 0x0800) strcat(g_dasm_str, "/fpsr");
+			if (w2 & 0x0400) strcat(g_dasm_str, "/fpiar");
 			break;
 		}
 
-		case 0x4:
-		case 0x5:
+		case 0x5:	// control to ea
 		{
-			sprintf(g_dasm_str, "fmove /todo");
+			strcpy(g_dasm_str, "fmovem.l   ");
+			if (w2 & 0x1000) strcat(g_dasm_str, "fpcr");
+			if (w2 & 0x0800) strcat(g_dasm_str, "/fpsr");
+			if (w2 & 0x0400) strcat(g_dasm_str, "/fpiar");
+			strcat(g_dasm_str, ", ");
+			strcat(g_dasm_str, get_ea_mode_str_32(g_cpu_ir));
 			break;
 		}
 
-		case 0x6:
-		case 0x7:
+		case 0x6:	// memory to FPU, list
 		{
-			sprintf(g_dasm_str, "fmovem /todo");
+			char temp[32];
+			if ((w2>>11) & 1)	// dynamic register list
+			{
+				sprintf(g_dasm_str, "fmovem.x   %s, D%d", get_ea_mode_str_32(g_cpu_ir), (w2>>4)&7);
+			}
+			else	// static register list
+			{
+				int i;
+				sprintf(g_dasm_str, "fmovem.x   %s, ", get_ea_mode_str_32(g_cpu_ir));
+				for (i = 0; i < 8; i++)
+				{
+					if (w2 & (1<<i))
+					{
+						if ((w2>>12) & 1)	// postincrement or control
+						{
+							sprintf(temp, "FP%d ", 7-i);
+						}
+						else			// predecrement
+						{
+							sprintf(temp, "FP%d ", i);
+						}
+						strcat(g_dasm_str, temp);
+					}
+				}
+			}
+			break;
+		}
+
+		case 0x7:	// FPU to memory, list
+		{
+			char temp[32];
+			if ((w2>>11) & 1)	// dynamic register list
+			{
+				sprintf(g_dasm_str, "fmovem.x   D%d, %s", (w2>>4)&7, get_ea_mode_str_32(g_cpu_ir));
+			}
+			else	// static register list
+			{
+				int i;
+				sprintf(g_dasm_str, "fmovem.x   ");
+				for (i = 0; i < 8; i++)
+				{
+					if (w2 & (1<<i))
+					{
+						if ((w2>>12) & 1)	// postincrement or control
+						{
+							sprintf(temp, "FP%d ", 7-i);
+						}
+						else			// predecrement
+						{
+							sprintf(temp, "FP%d ", i);
+						}
+						strcat(g_dasm_str, temp);
+					}
+				}
+				strcat(g_dasm_str, ", ");
+				strcat(g_dasm_str, get_ea_mode_str_32(g_cpu_ir));
+			}
 			break;
 		}
 

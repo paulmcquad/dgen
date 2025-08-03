@@ -3,11 +3,11 @@
 /* ======================================================================== */
 /*
  *                                  MUSASHI
- *                                Version 4.10
+ *                                Version 4.10-DGen by TTide
  *
  * A portable Motorola M680x0 processor emulation engine.
  * Copyright Karl Stenerud.  All rights reserved.
- * FPU and MMU by R. Belmont. NOT USED in Dgen.
+ * FPU and MMU by R. Belmont. NOT USED in DGen.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@
  */
 
 
-static const char g_version[] = "4.10 M";
+static const char g_version[] = "4.10.DGen-TTide";
 
 /* ======================================================================== */
 /* =============================== INCLUDES =============================== */
