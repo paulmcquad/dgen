@@ -1061,50 +1061,50 @@ static inline uint OPER_PCIX_16(void);
 static inline uint OPER_PCIX_32(void);
 
 /* Stack operations */
-INLINE void m68ki_push_16(uint value);
-INLINE void m68ki_push_32(uint value);
-INLINE uint m68ki_pull_16(void);
-INLINE uint m68ki_pull_32(void);
+static inline void m68ki_push_16(uint value);
+static inline void m68ki_push_32(uint value);
+static inline uint m68ki_pull_16(void);
+static inline uint m68ki_pull_32(void);
 
 /* Program flow operations */
-INLINE void m68ki_jump(uint new_pc);
-INLINE void m68ki_jump_vector(uint vector);
-INLINE void m68ki_branch_8(uint offset);
-INLINE void m68ki_branch_16(uint offset);
-INLINE void m68ki_branch_32(uint offset);
+static inline void m68ki_jump(uint new_pc);
+static inline void m68ki_jump_vector(uint vector);
+static inline void m68ki_branch_8(uint offset);
+static inline void m68ki_branch_16(uint offset);
+static inline void m68ki_branch_32(uint offset);
 
 /* Status register operations. */
-INLINE void m68ki_set_s_flag(uint value);            /* Only bit 2 of value should be set (i.e. 4 or 0) */
-INLINE void m68ki_set_sm_flag(uint value);           /* only bits 1 and 2 of value should be set */
-INLINE void m68ki_set_ccr(uint value);               /* set the condition code register */
-INLINE void m68ki_set_sr(uint value);                /* set the status register */
-INLINE void m68ki_set_sr_noint(uint value);          /* set the status register */
+static inline void m68ki_set_s_flag(uint value);            /* Only bit 2 of value should be set (i.e. 4 or 0) */
+static inline void m68ki_set_sm_flag(uint value);           /* only bits 1 and 2 of value should be set */
+static inline void m68ki_set_ccr(uint value);               /* set the condition code register */
+static inline void m68ki_set_sr(uint value);                /* set the status register */
+static inline void m68ki_set_sr_noint(uint value);          /* set the status register */
 
 /* Exception processing */
-INLINE uint m68ki_init_exception(void);              /* Initial exception processing */
+static inline uint m68ki_init_exception(void);              /* Initial exception processing */
 
-INLINE void m68ki_stack_frame_3word(uint pc, uint sr); /* Stack various frame types */
-INLINE void m68ki_stack_frame_buserr(uint sr);
+static inline void m68ki_stack_frame_3word(uint pc, uint sr); /* Stack various frame types */
+static inline void m68ki_stack_frame_buserr(uint sr);
 
-INLINE void m68ki_stack_frame_0000(uint pc, uint sr, uint vector);
-INLINE void m68ki_stack_frame_0001(uint pc, uint sr, uint vector);
-INLINE void m68ki_stack_frame_0010(uint sr, uint vector);
+static inline void m68ki_stack_frame_0000(uint pc, uint sr, uint vector);
+static inline void m68ki_stack_frame_0001(uint pc, uint sr, uint vector);
+static inline void m68ki_stack_frame_0010(uint sr, uint vector);
 #if 0 /* unused */
-INLINE void m68ki_stack_frame_1000(uint pc, uint sr, uint vector);
-INLINE void m68ki_stack_frame_1010(uint sr, uint vector, uint pc);
-INLINE void m68ki_stack_frame_1011(uint sr, uint vector, uint pc);
+static inline void m68ki_stack_frame_1000(uint pc, uint sr, uint vector);
+static inline void m68ki_stack_frame_1010(uint sr, uint vector, uint pc);
+static inline void m68ki_stack_frame_1011(uint sr, uint vector, uint pc);
 #endif
 
-INLINE void m68ki_exception_trap(uint vector);
-INLINE void m68ki_exception_trapN(uint vector);
-INLINE void m68ki_exception_trace(void);
-INLINE void m68ki_exception_privilege_violation(void);
-INLINE void m68ki_exception_1010(void);
-INLINE void m68ki_exception_1111(void);
-INLINE void m68ki_exception_illegal(void);
-INLINE void m68ki_exception_format_error(void);
-INLINE void m68ki_exception_address_error(void);
-INLINE void m68ki_exception_interrupt(uint int_level);
+static inline void m68ki_exception_trap(uint vector);
+static inline void m68ki_exception_trapN(uint vector);
+static inline void m68ki_exception_trace(void);
+static inline void m68ki_exception_privilege_violation(void);
+static inline void m68ki_exception_1010(void);
+static inline void m68ki_exception_1111(void);
+static inline void m68ki_exception_illegal(void);
+static inline void m68ki_exception_format_error(void);
+static inline void m68ki_exception_address_error(void);
+static inline void m68ki_exception_interrupt(uint int_level);
 static inline void m68ki_check_interrupts(void);     /* ASG: check for interrupts */
 
 /* quick disassembly (used for logging) */
@@ -1536,25 +1536,25 @@ static inline uint OPER_PCIX_32(void)  {uint ea = EA_PCIX_32();  return m68ki_re
 /* ---------------------------- Stack Functions --------------------------- */
 
 /* Push/pull data from the stack */
-INLINE void m68ki_push_16(uint value)
+static inline void m68ki_push_16(uint value)
 {
 	REG_SP = MASK_OUT_ABOVE_32(REG_SP - 2);
 	m68ki_write_16(REG_SP, value);
 }
 
-INLINE void m68ki_push_32(uint value)
+static inline void m68ki_push_32(uint value)
 {
 	REG_SP = MASK_OUT_ABOVE_32(REG_SP - 4);
 	m68ki_write_32(REG_SP, value);
 }
 
-INLINE uint m68ki_pull_16(void)
+static inline uint m68ki_pull_16(void)
 {
 	REG_SP = MASK_OUT_ABOVE_32(REG_SP + 2);
 	return m68ki_read_16(REG_SP-2);
 }
 
-INLINE uint m68ki_pull_32(void)
+static inline uint m68ki_pull_32(void)
 {
 	REG_SP = MASK_OUT_ABOVE_32(REG_SP + 4);
 	return m68ki_read_32(REG_SP-4);
@@ -1564,22 +1564,22 @@ INLINE uint m68ki_pull_32(void)
 /* Increment/decrement the stack as if doing a push/pull but
  * don't do any memory access.
  */
-INLINE void m68ki_fake_push_16(void)
+static inline void m68ki_fake_push_16(void)
 {
 	REG_SP = MASK_OUT_ABOVE_32(REG_SP - 2);
 }
 
-INLINE void m68ki_fake_push_32(void)
+static inline void m68ki_fake_push_32(void)
 {
 	REG_SP = MASK_OUT_ABOVE_32(REG_SP - 4);
 }
 
-INLINE void m68ki_fake_pull_16(void)
+static inline void m68ki_fake_pull_16(void)
 {
 	REG_SP = MASK_OUT_ABOVE_32(REG_SP + 2);
 }
 
-INLINE void m68ki_fake_pull_32(void)
+static inline void m68ki_fake_pull_32(void)
 {
 	REG_SP = MASK_OUT_ABOVE_32(REG_SP + 4);
 }
@@ -1591,13 +1591,13 @@ INLINE void m68ki_fake_pull_32(void)
  * These functions will also call the pc_changed callback if it was enabled
  * in m68kconf.h.
  */
-INLINE void m68ki_jump(uint new_pc)
+static inline void m68ki_jump(uint new_pc)
 {
 	REG_PC = new_pc;
 	m68ki_pc_changed(REG_PC);
 }
 
-INLINE void m68ki_jump_vector(uint vector)
+static inline void m68ki_jump_vector(uint vector)
 {
 	REG_PC = (vector<<2) + REG_VBR;
 	REG_PC = m68ki_read_data_32(REG_PC);
@@ -1610,17 +1610,17 @@ INLINE void m68ki_jump_vector(uint vector)
  * So far I've found no problems with not calling pc_changed for 8 or 16
  * bit branches.
  */
-INLINE void m68ki_branch_8(uint offset)
+static inline void m68ki_branch_8(uint offset)
 {
 	REG_PC += MAKE_INT_8(offset);
 }
 
-INLINE void m68ki_branch_16(uint offset)
+static inline void m68ki_branch_16(uint offset)
 {
 	REG_PC += MAKE_INT_16(offset);
 }
 
-INLINE void m68ki_branch_32(uint offset)
+static inline void m68ki_branch_32(uint offset)
 {
 	REG_PC += offset;
 	m68ki_pc_changed(REG_PC);
@@ -1633,7 +1633,7 @@ INLINE void m68ki_branch_32(uint offset)
 /* Set the S flag and change the active stack pointer.
  * Note that value MUST be 4 or 0.
  */
-INLINE void m68ki_set_s_flag(uint value)
+static inline void m68ki_set_s_flag(uint value)
 {
 	/* Backup the old stack pointer */
 	REG_SP_BASE[FLAG_S | ((FLAG_S>>1) & FLAG_M)] = REG_SP;
@@ -1646,7 +1646,7 @@ INLINE void m68ki_set_s_flag(uint value)
 /* Set the S and M flags and change the active stack pointer.
  * Note that value MUST be 0, 2, 4, or 6 (bit2 = S, bit1 = M).
  */
-INLINE void m68ki_set_sm_flag(uint value)
+static inline void m68ki_set_sm_flag(uint value)
 {
 	/* Backup the old stack pointer */
 	REG_SP_BASE[FLAG_S | ((FLAG_S>>1) & FLAG_M)] = REG_SP;
@@ -1658,7 +1658,7 @@ INLINE void m68ki_set_sm_flag(uint value)
 }
 
 /* Set the S and M flags.  Don't touch the stack pointer. */
-INLINE void m68ki_set_sm_flag_nosp(uint value)
+static inline void m68ki_set_sm_flag_nosp(uint value)
 {
 	/* Set the S and M flags */
 	FLAG_S = value & SFLAG_SET;
@@ -1667,7 +1667,7 @@ INLINE void m68ki_set_sm_flag_nosp(uint value)
 
 
 /* Set the condition code register */
-INLINE void m68ki_set_ccr(uint value)
+static inline void m68ki_set_ccr(uint value)
 {
 	FLAG_X = BIT_4(value)  << 4;
 	FLAG_N = BIT_3(value)  << 4;
@@ -1677,7 +1677,7 @@ INLINE void m68ki_set_ccr(uint value)
 }
 
 /* Set the status register but don't check for interrupts */
-INLINE void m68ki_set_sr_noint(uint value)
+static inline void m68ki_set_sr_noint(uint value)
 {
 	/* Mask out the "unimplemented" bits */
 	value &= CPU_SR_MASK;
@@ -1693,7 +1693,7 @@ INLINE void m68ki_set_sr_noint(uint value)
 /* Set the status register but don't check for interrupts nor
  * change the stack pointer
  */
-INLINE void m68ki_set_sr_noint_nosp(uint value)
+static inline void m68ki_set_sr_noint_nosp(uint value)
 {
 	/* Mask out the "unimplemented" bits */
 	value &= CPU_SR_MASK;
@@ -1707,7 +1707,7 @@ INLINE void m68ki_set_sr_noint_nosp(uint value)
 }
 
 /* Set the status register and check for interrupts */
-INLINE void m68ki_set_sr(uint value)
+static inline void m68ki_set_sr(uint value)
 {
 	m68ki_set_sr_noint(value);
 	m68ki_check_interrupts();
@@ -1717,7 +1717,7 @@ INLINE void m68ki_set_sr(uint value)
 /* ------------------------- Exception Processing ------------------------- */
 
 /* Initiate exception processing */
-INLINE uint m68ki_init_exception(void)
+static inline uint m68ki_init_exception(void)
 {
 	/* Save the old status register */
 	uint sr = m68ki_get_sr();
@@ -1732,7 +1732,7 @@ INLINE uint m68ki_init_exception(void)
 }
 
 /* 3 word stack frame (68000 only) */
-INLINE void m68ki_stack_frame_3word(uint pc, uint sr)
+static inline void m68ki_stack_frame_3word(uint pc, uint sr)
 {
 	m68ki_push_32(pc);
 	m68ki_push_16(sr);
@@ -1741,7 +1741,7 @@ INLINE void m68ki_stack_frame_3word(uint pc, uint sr)
 /* Format 0 stack frame.
  * This is the standard stack frame for 68010+.
  */
-INLINE void m68ki_stack_frame_0000(uint pc, uint sr, uint vector)
+static inline void m68ki_stack_frame_0000(uint pc, uint sr, uint vector)
 {
 	/* Stack a 3-word frame if we are 68000 */
 	if(CPU_TYPE == CPU_TYPE_000 || CPU_TYPE == CPU_TYPE_008)
@@ -1757,7 +1757,7 @@ INLINE void m68ki_stack_frame_0000(uint pc, uint sr, uint vector)
 /* Format 1 stack frame (68020).
  * For 68020, this is the 4 word throwaway frame.
  */
-INLINE void m68ki_stack_frame_0001(uint pc, uint sr, uint vector)
+static inline void m68ki_stack_frame_0001(uint pc, uint sr, uint vector)
 {
 	m68ki_push_16(0x1000 | (vector<<2));
 	m68ki_push_32(pc);
@@ -1767,7 +1767,7 @@ INLINE void m68ki_stack_frame_0001(uint pc, uint sr, uint vector)
 /* Format 2 stack frame.
  * This is used only by 68020 for trap exceptions.
  */
-INLINE void m68ki_stack_frame_0010(uint sr, uint vector)
+static inline void m68ki_stack_frame_0010(uint sr, uint vector)
 {
 	m68ki_push_32(REG_PPC);
 	m68ki_push_16(0x2000 | (vector<<2));
@@ -1778,7 +1778,7 @@ INLINE void m68ki_stack_frame_0010(uint sr, uint vector)
 
 /* Bus error stack frame (68000 only).
  */
-INLINE void m68ki_stack_frame_buserr(uint sr)
+static inline void m68ki_stack_frame_buserr(uint sr)
 {
 	m68ki_push_32(REG_PC);
 	m68ki_push_16(sr);
@@ -1969,7 +1969,7 @@ void m68ki_stack_frame_1011(uint sr, uint vector, uint pc)
 /* Used for Group 2 exceptions.
  * These stack a type 2 frame on the 020.
  */
-INLINE void m68ki_exception_trap(uint vector)
+static inline void m68ki_exception_trap(uint vector)
 {
 	uint sr = m68ki_init_exception();
 
@@ -1980,23 +1980,23 @@ INLINE void m68ki_exception_trap(uint vector)
 
 	m68ki_jump_vector(vector);
 
-	/* Use up some clock cycles */
-	USE_CYCLES(CYC_EXCEPTION[vector]);
+	/* Use up some clock cycles and undo the instruction's cycles */
+	USE_CYCLES(CYC_EXCEPTION[vector] - CYC_INSTRUCTION[REG_IR]);
 }
 
 /* Trap#n stacks a 0 frame but behaves like group2 otherwise */
-INLINE void m68ki_exception_trapN(uint vector)
+static inline void m68ki_exception_trapN(uint vector)
 {
 	uint sr = m68ki_init_exception();
 	m68ki_stack_frame_0000(REG_PC, sr, vector);
 	m68ki_jump_vector(vector);
 
-	/* Use up some clock cycles */
-	USE_CYCLES(CYC_EXCEPTION[vector]);
+	/* Use up some clock cycles and undo the instruction's cycles */
+	USE_CYCLES(CYC_EXCEPTION[vector] - CYC_INSTRUCTION[REG_IR]);
 }
 
 /* Exception for trace mode */
-INLINE void m68ki_exception_trace(void)
+static inline void m68ki_exception_trace(void)
 {
 	uint sr = m68ki_init_exception();
 
@@ -2023,7 +2023,7 @@ INLINE void m68ki_exception_trace(void)
 }
 
 /* Exception for privilege violation */
-INLINE void m68ki_exception_privilege_violation(void)
+static inline void m68ki_exception_privilege_violation(void)
 {
 	uint sr = m68ki_init_exception();
 
@@ -2042,7 +2042,7 @@ INLINE void m68ki_exception_privilege_violation(void)
 }
 
 /* Exception for A-Line instructions */
-INLINE void m68ki_exception_1010(void)
+static inline void m68ki_exception_1010(void)
 {
 	uint sr;
 #if M68K_LOG_1010_1111 == OPT_ON
@@ -2060,7 +2060,7 @@ INLINE void m68ki_exception_1010(void)
 }
 
 /* Exception for F-Line instructions */
-INLINE void m68ki_exception_1111(void)
+static inline void m68ki_exception_1111(void)
 {
 	uint sr;
 
@@ -2079,13 +2079,15 @@ INLINE void m68ki_exception_1111(void)
 }
 
 /* Exception for illegal instructions */
-INLINE void m68ki_exception_illegal(void)
+static inline void m68ki_exception_illegal(void)
 {
 	uint sr;
 
 	M68K_DO_LOG((M68K_LOG_FILEHANDLE "%s at %08x: illegal instruction %04x (%s)\n",
 				 m68ki_cpu_names[CPU_TYPE], ADDRESS_68K(REG_PPC), REG_IR,
 				 m68ki_disassemble_quick(ADDRESS_68K(REG_PPC))));
+	if (m68ki_illg_callback(REG_IR))
+	return;
 
 	sr = m68ki_init_exception();
 
@@ -2104,7 +2106,7 @@ INLINE void m68ki_exception_illegal(void)
 }
 
 /* Exception for format errror in RTE */
-INLINE void m68ki_exception_format_error(void)
+static inline void m68ki_exception_format_error(void)
 {
 	uint sr = m68ki_init_exception();
 	m68ki_stack_frame_0000(REG_PC, sr, EXCEPTION_FORMAT_ERROR);
@@ -2115,7 +2117,7 @@ INLINE void m68ki_exception_format_error(void)
 }
 
 /* Exception for address error */
-INLINE void m68ki_exception_address_error(void)
+static inline void m68ki_exception_address_error(void)
 {
 	uint sr = m68ki_init_exception();
 
@@ -2142,7 +2144,7 @@ INLINE void m68ki_exception_address_error(void)
 
 
 /* Service an interrupt request and start exception processing */
-void m68ki_exception_interrupt(uint int_level)
+static inline void m68ki_exception_interrupt(uint int_level)
 {
 	uint vector;
 	uint sr;
