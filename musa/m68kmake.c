@@ -3,26 +3,31 @@
 /* ======================================================================== */
 /*
  *                                  MUSASHI
- *                                Version 3.31
+ *                                Version 4.10
  *
  * A portable Motorola M680x0 processor emulation engine.
- * Copyright 1998-2007 Karl Stenerud.  All rights reserved.
+ * Copyright Karl Stenerud.  All rights reserved.
+ * FPU and MMU by R. Belmont. NOT USED in Dgen.
  *
- * This code may be freely used for non-commercial purposes as long as this
- * copyright notice remains unaltered in the source code and any binary files
- * containing this code in compiled form.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * All other lisencing terms must be negotiated with the author
- * (Karl Stenerud).
- *
- * The latest version of this code can be obtained at:
- * http://kstenerud.cjb.net
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
-/*
- * Modified For OpenVMS By:  Robert Alan Byer
- *                           byer@mail.ourservers.net
- */
 
 
 /* ======================================================================== */
@@ -52,7 +57,7 @@
  */
 
 
-static const char* g_version = "3.31";
+static const char g_version[] = "4.10";
 
 /* ======================================================================== */
 /* =============================== INCLUDES =============================== */
@@ -710,6 +715,8 @@ int extract_opcode_info(char* src, char* name, int* size, char* spec_proc, char*
 
 	ptr += check_strcncpy(spec_ea, ptr, ')', MAX_SPEC_EA_LENGTH);
 	if(*ptr != ')') return 0;
+	ptr++;
+	ptr += skip_spaces(ptr);
 
 	return 1;
 }
@@ -757,7 +764,7 @@ void write_body(FILE* filep, body_struct* body, replace_struct* replace)
 			}
 			/* Found a directive with no matching replace string */
 			if(!found)
-				error_exit("Unknown " ID_BASE " directive");
+				error_exit("Unknown " ID_BASE " directive [%s]", output);
 		}
 		fprintf(filep, "%s\n", output);
 	}
