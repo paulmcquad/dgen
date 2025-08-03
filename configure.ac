@@ -1,7 +1,7 @@
-dnl DGen/SDL v1.34
+dnl DGen/SDL v1.35
 dnl At long last, the configure script!
 
-AC_INIT([DGen/SDL],[1.34],[zamaz@users.sourceforge.net],[dgen-sdl],[http://sourceforge.net/projects/dgen],[])
+AC_INIT([DGen/SDL],[1.35],[zamaz@users.sourceforge.net],[dgen-sdl],[http://sourceforge.net/projects/dgen],[])
 
 dnl We'll need machine type later.
 AC_CANONICAL_HOST
