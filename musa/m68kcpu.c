@@ -40,6 +40,9 @@
 
 extern void m68040_fpu_op0(void);
 extern void m68040_fpu_op1(void);
+extern unsigned char m68ki_cycles[][0x10000];
+extern void (*m68ki_instruction_jump_table[0x10000])(void); /* opcode handler jump table */
+extern void m68ki_build_opcode_table(void);
 
 #include "m68kops.h"
 #include "m68kcpu.h"
@@ -59,21 +62,15 @@ const char* m68ki_cpu_names[] =
 {
 	"Invalid CPU",
 	"M68000",
-	"M68008",
-	"Invalid CPU",
 	"M68010",
-	"Invalid CPU",
-	"Invalid CPU",
-	"Invalid CPU",
 	"M68EC020",
-	"Invalid CPU",
-	"Invalid CPU",
-	"Invalid CPU",
-	"Invalid CPU",
-	"Invalid CPU",
-	"Invalid CPU",
-	"Invalid CPU",
-	"M68020"
+	"M68020",
+	"M68EC030",
+	"M68030",
+	"M68EC040",
+	"M68LC040",
+	"M68040",
+	"SCC68070",
 };
 #endif /* M68K_LOG_ENABLE */
 
@@ -491,6 +488,13 @@ static void default_rte_instr_callback(void)
 static int default_tas_instr_callback(void)
 {
 	return 1; // allow writeback
+}
+
+/* Called when an illegal instruction is encountered */
+static int default_illg_instr_callback(int opcode)
+{
+	(void)opcode;
+	return 0; // not handled : exception will occur
 }
 
 /* Called when the program counter changed by a large value */

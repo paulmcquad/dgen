@@ -5,6 +5,7 @@
 *.exe
 .deps
 .dirstamp
+.vscode
 aclocal.m4
 autom4te.cache
 Makefile
@@ -32,3 +33,4 @@ Makefile.in
 /star/star
 /star/starcpu.asm
 /cyclone/Cyclone.s
+/doc
